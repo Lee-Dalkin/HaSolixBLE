@@ -10,7 +10,7 @@ from homeassistant.components.number import NumberEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from SolixBLE import F2000Old, SolixBLEDevice
+from SolixBLE import F2000Legacy, SolixBLEDevice
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ async def async_setup_entry(
     device = config_entry.runtime_data
     numbers: list[SolixNumberEntity] = []
 
-    if type(device) in [F2000Old]:
+    if type(device) in [F2000Legacy]:
         numbers.append(
             SolixNumberEntity(
                 device=device,
