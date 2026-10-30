@@ -17,7 +17,7 @@ from SolixBLE import (
     C1000,
     C1000G2,
     F2000,
-    F2000Old,
+    F2000Legacy,
     F2600,
     F3800,
     Generic,
@@ -52,7 +52,7 @@ def get_power_station_class(model: Models) -> SolixBLEDevice:
     elif model is Models.F2000:
         return F2000
     elif model is Models.F2000_OLD:
-        return F2000Old
+        return F2000Legacy
     elif model is Models.F2600:
         return F2600
     elif model is Models.F3800:
