@@ -8,12 +8,14 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
-from SolixBLE import F2000Legacy
+from homeassistant.components.sensor.const import SensorDeviceClass
+from SolixBLE import ChargingStatus, F2000Legacy
 
 from custom_components.solix_ble import get_power_station_class
 from custom_components.solix_ble.const import Models
 from custom_components.solix_ble.sensor import (
     CHARGING_STATUS_C300_STRINGS,
+    SolixSensorEntity,
     async_setup_entry,
 )
 
@@ -50,3 +52,32 @@ async def test_legacy_f2000_sensor_attribute_and_charging_labels() -> None:
     ]
     assert len(input_limits) == 1
     assert input_limits[0][3] == "ac_charging_power"
+
+@pytest.mark.parametrize(
+    ("charging_status", "expected"),
+    [
+        (ChargingStatus.IDLE, "Idle"),
+        (ChargingStatus.DISCHARGING, "Discharging"),
+        (ChargingStatus.CHARGING, "Charging"),
+    ],
+)
+def test_legacy_f2000_charging_status_rendering(
+    charging_status: ChargingStatus, expected: str
+) -> None:
+    """Translate actual library enum values into the expected HA sensor state."""
+    device = SimpleNamespace(
+        name="Test original F2000",
+        address="AA:BB:CC:DD:EE:FF",
+        available=True,
+        charging_status=charging_status,
+    )
+    sensor = SolixSensorEntity(
+        device,
+        "Charging Status",
+        None,
+        "charging_status",
+        SensorDeviceClass.ENUM,
+        CHARGING_STATUS_C300_STRINGS,
+        None,
+    )
+    assert sensor.native_value == expected
