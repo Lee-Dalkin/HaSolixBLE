@@ -77,7 +77,7 @@ def test_legacy_f2000_charging_status_rendering(
     sensor = SolixSensorEntity(
         cast(F2000Legacy, device),
         "Charging Status",
-        None,
+        cast(str, None),  # Enum sensors do not use a unit
         "charging_status",
         SensorDeviceClass.ENUM,
         CHARGING_STATUS_C300_STRINGS,
