@@ -6,13 +6,11 @@ They require a SolixBLE build exporting F2000Legacy.
 """
 
 from types import SimpleNamespace
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 from unittest.mock import patch
 
 import pytest
 from homeassistant.components.sensor.const import SensorDeviceClass
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from SolixBLE import ChargingStatus, F2000Legacy  # type: ignore[import-untyped]
 
 from custom_components.solix_ble import SolixBLEConfigEntry, get_power_station_class
@@ -21,6 +19,10 @@ from custom_components.solix_ble.sensor import (
     SolixSensorEntity,
     async_setup_entry,
 )
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 
 @pytest.mark.asyncio
