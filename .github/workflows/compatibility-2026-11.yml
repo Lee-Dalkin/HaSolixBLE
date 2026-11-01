@@ -1,0 +1,39 @@
+# Isolated compatibility smoke test only: no access to a real HA instance or devices.
+# Temporary workflow for assessing Home Assistant 2026.11 before an upgrade.
+name: HA 2026.11 compatibility (isolated)
+
+on:
+  push:
+    branches: [test/home-assistant-2026-11]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        homeassistant:
+          - "2026.10.4"
+          - "2026.11.0b2"
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - name: Install test dependencies and exact Home Assistant version
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "cryptography==50.0.1" "serialx" -r requirements_dev.txt
+          python -m pip install --pre "homeassistant==${{ matrix.homeassistant }}"
+      - name: Verify installed versions and Python dependency consistency
+        run: |
+          python -c "import importlib.metadata as m; print('Home Assistant:', m.version('homeassistant')); print('SolixBLE:', m.version('SolixBLE')); print('cryptography:', m.version('cryptography'))"
+          python -m pip check
+      - name: Run isolated integration regression tests
+        run: |
+          python -m pytest -q
