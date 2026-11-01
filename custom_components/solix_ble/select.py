@@ -10,7 +10,7 @@ from homeassistant.components.select import SelectEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from SolixBLE import F2000Old, SolixBLEDevice
+from SolixBLE import F2000Legacy, SolixBLEDevice
 from SolixBLE.states import LightStatus
 
 _LOGGER = logging.getLogger(__name__)
@@ -57,7 +57,7 @@ async def async_setup_entry(
     device = config_entry.runtime_data
     selects: list[SolixSelectEntity] = []
 
-    if type(device) in [F2000Old]:
+    if type(device) in [F2000Legacy]:
         selects.append(
             SolixSelectEntity(
                 device=device,
@@ -69,7 +69,7 @@ async def async_setup_entry(
             )
         )
 
-    if type(device) in [F2000Old]:
+    if type(device) in [F2000Legacy]:
         selects.append(
             SolixSelectEntity(
                 device=device,
@@ -81,7 +81,7 @@ async def async_setup_entry(
             )
         )
 
-    if type(device) in [F2000Old]:
+    if type(device) in [F2000Legacy]:
         selects.append(
             SolixSelectEntity(
                 device=device,
