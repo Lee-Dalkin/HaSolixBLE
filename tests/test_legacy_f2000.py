@@ -1,3 +1,4 @@
+# ruff: noqa: CPY001
 """Regression checks for the original 767/F2000 (A1780) legacy model.
 
 These tests exercise Home Assistant sensor registration without BLE hardware.
@@ -5,19 +6,18 @@ They require a SolixBLE build exporting F2000Legacy.
 """
 
 from types import SimpleNamespace
-from typing import cast
+from typing import Any, cast
 from unittest.mock import patch
 
 import pytest
 from homeassistant.components.sensor.const import SensorDeviceClass
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from SolixBLE import ChargingStatus, F2000Legacy
+from SolixBLE import ChargingStatus, F2000Legacy  # type: ignore[import-untyped]
 
 from custom_components.solix_ble import SolixBLEConfigEntry, get_power_station_class
-from custom_components.solix_ble.const import Models
+from custom_components.solix_ble.const import CHARGING_STATUS_C300_STRINGS, Models
 from custom_components.solix_ble.sensor import (
-    CHARGING_STATUS_C300_STRINGS,
     SolixSensorEntity,
     async_setup_entry,
 )
@@ -32,16 +32,16 @@ async def test_legacy_f2000_sensor_attribute_and_charging_labels() -> None:
     # We test which entities are registered, not a live Bluetooth connection.
     # Entity construction is mocked so telemetry and BLE state are unnecessary.
     device = object.__new__(F2000Legacy)
-    entities: list[tuple] = []
+    entities: list[tuple[Any, ...]] = []
 
     with patch(
         "custom_components.solix_ble.sensor.SolixSensorEntity",
-        side_effect=lambda *args, **kwargs: args,
+        side_effect=lambda *args, **_kwargs: args,
     ):
         await async_setup_entry(
-            cast(HomeAssistant, None),  # hass is not used by this sensor factory
-            cast(SolixBLEConfigEntry, SimpleNamespace(runtime_data=device)),
-            cast(AddEntitiesCallback, entities.extend),
+            cast("HomeAssistant", None),  # hass is not used by this sensor factory
+            cast("SolixBLEConfigEntry", SimpleNamespace(runtime_data=device)),
+            cast("AddEntitiesCallback", entities.extend),
         )
 
     charging = [args for args in entities if args[1] == "Charging Status"]
@@ -56,6 +56,7 @@ async def test_legacy_f2000_sensor_attribute_and_charging_labels() -> None:
     assert len(input_limits) == 1
     assert input_limits[0][3] == "ac_charging_power"
 
+
 @pytest.mark.parametrize(
     ("charging_status", "expected"),
     [
@@ -65,7 +66,7 @@ async def test_legacy_f2000_sensor_attribute_and_charging_labels() -> None:
     ],
 )
 def test_legacy_f2000_charging_status_rendering(
-    charging_status: ChargingStatus, expected: str
+    charging_status: ChargingStatus, expected: str,
 ) -> None:
     """Translate actual library enum values into the expected HA sensor state."""
     device = SimpleNamespace(
@@ -75,9 +76,9 @@ def test_legacy_f2000_charging_status_rendering(
         charging_status=charging_status,
     )
     sensor = SolixSensorEntity(
-        cast(F2000Legacy, device),
+        cast("F2000Legacy", device),
         "Charging Status",
-        cast(str, None),  # Enum sensors do not use a unit
+        cast("str", None),  # Enum sensors do not use a unit
         "charging_status",
         SensorDeviceClass.ENUM,
         CHARGING_STATUS_C300_STRINGS,
