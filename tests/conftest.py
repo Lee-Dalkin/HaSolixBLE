@@ -7,7 +7,10 @@ from datetime import datetime
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+try:
+    from pytest_homeassistant.common import MockConfigEntry
+except ImportError:
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.solix_ble.const import DOMAIN
 
@@ -32,9 +35,14 @@ def mock_bluetooth(enable_bluetooth: None):
     """Auto mock bluetooth."""
 
 
-@pytest.fixture(autouse=True)
-def auto_enable_custom_integrations(enable_custom_integrations):
-    yield
+# The official 2026.11 pytest-homeassistant plugin enables custom integrations
+# automatically. The older test helper requires this legacy fixture.
+from importlib.util import find_spec
+
+if find_spec("pytest_homeassistant_custom_component") is not None:
+    @pytest.fixture(autouse=True)
+    def auto_enable_custom_integrations(enable_custom_integrations):
+        yield
 
 
 @pytest.fixture

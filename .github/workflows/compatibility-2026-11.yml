@@ -1,0 +1,49 @@
+# Isolated compatibility smoke test only: no access to a real HA instance or devices.
+# Temporary workflow for assessing Home Assistant 2026.11 before an upgrade.
+name: HA 2026.11 compatibility (isolated)
+
+on:
+  push:
+    branches: [test/home-assistant-2026-11]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - homeassistant: "2026.10.4"
+            cryptography: "50.0.1"
+          - homeassistant: "2026.11.0"
+            cryptography: "50.0.2"
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - name: Install test dependencies and exact Home Assistant version
+        run: |
+          python -m pip install --upgrade pip
+          if [ "${{ matrix.homeassistant }}" = "2026.11.0" ]; then
+            # 2026.11 requires the official fixture package instead of the legacy helper.
+            grep -v '^pytest-homeassistant-custom-component$' requirements_dev.txt > /tmp/ha-test-requirements.txt
+            python -m pip install "cryptography==${{ matrix.cryptography }}" "serialx" \
+              "pytest-homeassistant[bluetooth]==${{ matrix.homeassistant }}" -r /tmp/ha-test-requirements.txt
+          else
+            python -m pip install "cryptography==${{ matrix.cryptography }}" "serialx" -r requirements_dev.txt
+          fi
+          python -m pip install "homeassistant==${{ matrix.homeassistant }}"
+      - name: Verify installed versions and Python dependency consistency
+        run: |
+          python -c "import importlib.metadata as m; ha=m.version('homeassistant'); cr=m.version('cryptography'); print('Home Assistant:', ha); print('SolixBLE:', m.version('SolixBLE')); print('cryptography:', cr); assert ha == '${{ matrix.homeassistant }}', ha; assert cr == '${{ matrix.cryptography }}', cr"
+          python -m pip check
+      - name: Run isolated integration regression tests
+        run: |
+          # Import HA first so its httpx2 alias is registered before pytest plugins load.
+          python -c "import homeassistant; import pytest; raise SystemExit(pytest.main(['-q']))"
