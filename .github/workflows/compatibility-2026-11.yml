@@ -45,4 +45,5 @@ jobs:
           python -m pip check
       - name: Run isolated integration regression tests
         run: |
-          python -m pytest -q
+          # Import HA first so its httpx2 alias is registered before pytest plugins load.
+          python -c "import homeassistant; import pytest; raise SystemExit(pytest.main(['-q']))"
