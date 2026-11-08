@@ -16,12 +16,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        homeassistant:
-          include:
-            - homeassistant: "2026.10.4"
-              cryptography: "50.0.1"
-            - homeassistant: "2026.11.0"
-              cryptography: "50.0.2"
+        include:
+          - homeassistant: "2026.10.4"
+            cryptography: "50.0.1"
+          - homeassistant: "2026.11.0"
+            cryptography: "50.0.2"
 
     steps:
       - uses: actions/checkout@v5
