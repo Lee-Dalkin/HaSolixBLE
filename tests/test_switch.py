@@ -17,7 +17,10 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.setup import async_setup_component
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+try:
+    from pytest_homeassistant.common import MockConfigEntry
+except ImportError:
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
 from SolixBLE import PortStatus, SolixBLEDevice
 
 from custom_components.solix_ble.const import DOMAIN
