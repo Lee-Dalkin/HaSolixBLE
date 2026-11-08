@@ -30,7 +30,22 @@ jobs:
       - name: Install test dependencies and exact Home Assistant version
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "cryptography==${{ matrix.cryptography }}" "serialx" -r requirements_dev.txt
+          if [ "${{ matrix.homeassistant }}" = "2026.11.0" ]; then
+            # 2026.11 uses the official test plugin, which replaces the legacy helper.
+            grep -v '^pytest-homeassistant-custom-component
+      - name: Verify installed versions and Python dependency consistency
+        run: |
+          python -c "import importlib.metadata as m; ha=m.version('homeassistant'); cr=m.version('cryptography'); print('Home Assistant:', ha); print('SolixBLE:', m.version('SolixBLE')); print('cryptography:', cr); assert ha == '${{ matrix.homeassistant }}', ha; assert cr == '${{ matrix.cryptography }}', cr"
+          python -m pip check
+      - name: Run isolated integration regression tests
+        run: |
+          python -m pytest -q
+ requirements_dev.txt > /tmp/ha-test-requirements.txt
+            python -m pip install "cryptography==${{ matrix.cryptography }}" "serialx" \
+              "pytest-homeassistant[bluetooth]==${{ matrix.homeassistant }}" -r /tmp/ha-test-requirements.txt
+          else
+            python -m pip install "cryptography==${{ matrix.cryptography }}" "serialx" -r requirements_dev.txt
+          fi
           python -m pip install "homeassistant==${{ matrix.homeassistant }}"
       - name: Verify installed versions and Python dependency consistency
         run: |
